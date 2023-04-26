@@ -9,7 +9,7 @@
 #include <array>
 #include <cstdint>
 
-#if defined(__linux__) || defined(ANDROID)
+#if defined(__linux__) || defined(ANDROID) || defined(__QNXNTO__)
 #include <sys/types.h>
 #endif
 
