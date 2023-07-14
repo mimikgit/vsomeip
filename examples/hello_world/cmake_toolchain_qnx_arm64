@@ -1,0 +1,23 @@
+# this one is important
+set(CMAKE_SYSTEM_NAME QNX)
+#SET(CMAKE_SYSTEM_NAME Linux)
+#this one not so much
+SET(CMAKE_SYSTEM_VERSION 1)
+
+SET(QNX_SDK_DIR  "$ENV{HOME}/qnx710")
+#SET(QNX_SDK_DIR  "$ENV{HOME}/qnx700")
+SET(TOOLCHAIN_BIN_PATH  "${QNX_SDK_DIR}/host/linux/x86_64/usr/bin")
+
+# where is the target environment 
+#SET(CMAKE_FIND_ROOT_PATH  "${QNX_SDK_DIR}/target/qnx7/x86_64/usr")
+
+# search for programs in the build host directories
+SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+# for libraries and headers in the target directories
+SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+
+# specify the cross compiler
+SET(CMAKE_C_COMPILER   ${TOOLCHAIN_BIN_PATH}/ntoaarch64-gcc)
+SET(CMAKE_CXX_COMPILER ${TOOLCHAIN_BIN_PATH}/ntoaarch64-g++)
+
