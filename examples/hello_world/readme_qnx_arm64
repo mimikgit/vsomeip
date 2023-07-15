@@ -1,0 +1,21 @@
+1.compiling hello world example
+suppose already build vsomeip libaries, compiling as the following
+
+mkdir build
+cd build
+cmake -DCMAKE_TOOLCHAIN_FILE=../cmake_toolchain_qnx_arm64 ..
+make
+
+2.running hello world service and client
+suppose hello world service and client, config json, and all the depedency libraries install at /mimik/someip on qnx arm64 platfrom. 
+running hello world service as the following.
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/mimik/someip
+VSOMEIP_CONFIGURATION=helloworld-local.json VSOMEIP_APPLICATION_NAME=hello_world_service ./hello_world_service
+
+running hello world service as the following.
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/mimik/someip
+VSOMEIP_CONFIGURATION=helloworld-local.json VSOMEIP_APPLICATION_NAME=hello_world_client ./hello_world_client
+
+ 
+
