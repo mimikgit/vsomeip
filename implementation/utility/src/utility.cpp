@@ -17,6 +17,8 @@
     #include <sys/mman.h>
     #include <thread>
     #include <sstream>
+    #include <errno.h>
+    #include <string.h>
 #endif
 
 #include <sys/stat.h>
@@ -76,7 +78,7 @@ bool utility::is_routing_manager(const std::string &_network) {
     wchar_t its_tmp_folder[MAX_PATH];
     if (GetTempPathW(MAX_PATH, its_tmp_folder)) {
         std::wstring its_lockfile(its_tmp_folder);
-        std::string its_network(_network + ".lck");
+        std::string its_network(_network + ".mk_lck");
         its_lockfile.append(its_network.begin(), its_network.end());
         r.first->second.lock_handle_ = CreateFileW(its_lockfile.c_str(), GENERIC_READ, 0, NULL, CREATE_NEW, 0, NULL);
         if (r.first->second.lock_handle_ == INVALID_HANDLE_VALUE) {
@@ -91,15 +93,39 @@ bool utility::is_routing_manager(const std::string &_network) {
     return (r.first->second.lock_handle_ != INVALID_HANDLE_VALUE);
 #else
     std::string its_base_path(VSOMEIP_BASE_PATH + _network);
-    std::string its_lockfile(its_base_path + ".lck");
+    std::string its_lockfile(its_base_path + ".mk_lck");
+    VSOMEIP_INFO << "utility::is_routing_manager its_lockfile: " << its_lockfile;
     int its_lock_ctrl(-1);
+    errno = 0;
+    int f_exits = access(its_lockfile.c_str(), F_OK);
+
+    // if (f_exits < 0) {
+    //  std::string err_str(strerror(errno));
+    //  VSOMEIP_INFO << "utility::is_routing_manager() access failed. f_exits: " << f_exits << "errno: " <<  errno << " err_str: " << err_str;
+    // }
 
     struct flock its_lock_data = { F_WRLCK, SEEK_SET, 0, 0, 0 };
 
     r.first->second.lock_fd_ = open(its_lockfile.c_str(), O_WRONLY | O_CREAT, S_IWUSR | S_IWGRP);
     if (-1 != r.first->second.lock_fd_) {
         its_lock_data.l_pid = getpid();
+        errno = 0;
         its_lock_ctrl = fcntl(r.first->second.lock_fd_, F_SETLK, &its_lock_data);
+        if (its_lock_ctrl == -1) {
+            if ((errno != EACCES) && (errno != EAGAIN)) {
+                std::string err_str(strerror(errno));
+                VSOMEIP_INFO << "utility::is_routing_manager() fcntl failed. its_lock_ctrl: " << its_lock_ctrl << "errno: " <<  errno << " err_str: " << err_str;
+                VSOMEIP_INFO << "!!!! Fixing system error in locking using an alternate approach !!!!" ;
+                if (f_exits != 0) {
+                 its_lock_ctrl = 0;
+                 VSOMEIP_INFO << "First time, f_exits=-1 force setting its_lock_ctrl to 0 from its_lock_ctrl: " << its_lock_ctrl ;
+                }
+            }
+            // else {
+            //   std::string err_str(strerror(errno));
+               // VSOMEIP_INFO << "utility::is_routing_manager() fcntl error. its_lock_ctrl: " << its_lock_ctrl << "errno: " <<  errno << " err_str: " << err_str;
+           // }
+        }
     } else {
         VSOMEIP_ERROR << __func__
                 << ": Could not open " << its_lockfile << ": " << std::strerror(errno);
@@ -125,7 +151,7 @@ void utility::remove_lockfile(const std::string &_network) {
         wchar_t its_tmp_folder[MAX_PATH];
         if (GetTempPathW(MAX_PATH, its_tmp_folder)) {
             std::wstring its_lockfile(its_tmp_folder);
-            std::string its_network(_network + ".lck");
+            std::string its_network(_network + ".mk_lck");
             its_lockfile.append(its_network.begin(), its_network.end());
             if (DeleteFileW(its_lockfile.c_str()) == 0) {
                 VSOMEIP_ERROR << __func__ << ": DeleteFileW failed: "
@@ -139,7 +165,7 @@ void utility::remove_lockfile(const std::string &_network) {
     }
 #else
     std::string its_base_path(VSOMEIP_BASE_PATH + _network);
-    std::string its_lockfile(its_base_path + ".lck");
+    std::string its_lockfile(its_base_path + ".mk_lck");
 
     if (r->second.lock_fd_ != -1) {
        if (close(r->second.lock_fd_) == -1) {

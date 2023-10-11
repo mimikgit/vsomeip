@@ -140,7 +140,7 @@ bool application_impl::init() {
                 = std::dynamic_pointer_cast<configuration_plugin>(its_plugin);
             if (its_configuration_plugin) {
                 configuration_ = its_configuration_plugin->get_configuration(name_, path_);
-                VSOMEIP_INFO << "Configuration module loaded.";
+                VSOMEIP_INFO << "Configuration module loaded. " << "name_: " << name_ << "path_: " << path_;
             } else {
                 std::cerr << "Invalid configuration module!" << std::endl;
                 std::exit(EXIT_FAILURE);

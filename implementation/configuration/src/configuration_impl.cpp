@@ -226,6 +226,7 @@ bool configuration_impl::load(const std::string &_name) {
     // Environment
     char *its_env;
 
+    // VSOMEIP_INFO << "configuration_impl::load Entry _name: " << _name ;
     // Predefine file / folder
     std::string its_file(VSOMEIP_DEFAULT_CONFIGURATION_FILE); // configuration file
     std::string its_folder(VSOMEIP_DEFAULT_CONFIGURATION_FOLDER); // configuration folder
